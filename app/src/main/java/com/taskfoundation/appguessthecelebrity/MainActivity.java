@@ -22,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> celebURLs = new ArrayList<String>();
@@ -52,11 +54,12 @@ public class MainActivity extends AppCompatActivity {
         DownloadTask task = new DownloadTask();
         String result = null;
         try {
-            result = task.execute("https://www.imdb.com/list/ls052283250/").get();
+            result = task.execute("http://www.imdb.com/list/ls052283250/").get();
 
             Log.i("Content is: ", result);
 
-            String[] splitResult = result.split("<div class=\"listedArticles\"></div>");
+            String[] splitResult = result.split("<div class=\"lister-item-image\"></div>");
+            Log.d("result" , splitResult.toString());
 
             //Regex
             Pattern pattern = Pattern.compile("img src=\"(.*?)\"");
@@ -90,11 +93,11 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(String... urls) {
             String result = "";
             URL url;
-            HttpURLConnection connection = null;
+            HttpsURLConnection connection = null;
 
             try {
                 url = new URL(urls[0]);
-                connection = (HttpURLConnection) url.openConnection();
+                connection = (HttpsURLConnection) url.openConnection();
                 InputStream inputStream = connection.getInputStream();
                 InputStreamReader reader = new InputStreamReader(inputStream);
 
@@ -120,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 URL url = new URL(urls[0]);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
                 connection.connect();
                 InputStream inputStream = connection.getInputStream();
 
