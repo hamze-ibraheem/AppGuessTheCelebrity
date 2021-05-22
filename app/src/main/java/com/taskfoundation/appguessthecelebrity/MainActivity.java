@@ -7,7 +7,10 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,9 +27,16 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> celebURLs = new ArrayList<String>();
     ArrayList<String> celebNames = new ArrayList<String>();
 
-    int choosenCeleb = 0;
+    int chosenCeleb = 0;
 
     ImageView imageView;
+    Button button0;
+    Button button1;
+    Button button2;
+    Button button3;
+
+    String[] answers = new String[4];
+    int locationOfCorrectAnswer = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         imageView = findViewById(R.id.imageView);
+        button0 = findViewById(R.id.button0);
+        button1 = findViewById(R.id.button1);
+        button2 = findViewById(R.id.button2);
+        button3 = findViewById(R.id.button3);
 
         DownloadTask task = new DownloadTask();
         String result = null;
@@ -59,14 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 celebNames.add(matcher.group(1));
             }
 
-            Random rand = new Random();
-            choosenCeleb = rand.nextInt(celebURLs.size());
-
-            ImageDownloader imageDownloaderTask = new ImageDownloader();
-
-            Bitmap celebImage = imageDownloaderTask.execute(celebURLs.get(choosenCeleb)).get();
-
-            imageView.setImageBitmap(celebImage);
+            newQuestion();
 
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -124,6 +131,54 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return null;
             }
+        }
+    }
+
+    public void celebChosen(View view) {
+        if (view.getTag().toString().equals(Integer.toString(locationOfCorrectAnswer))) {
+            Toast.makeText(getApplicationContext(), "Correct!", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Wrong! It was: " + celebNames.get(chosenCeleb), Toast.LENGTH_LONG).show();
+        }
+
+        newQuestion();
+    }
+
+    public void newQuestion() {
+        try {
+            Random rand = new Random();
+            chosenCeleb = rand.nextInt(celebURLs.size());
+
+            ImageDownloader imageDownloaderTask = new ImageDownloader();
+
+            Bitmap celebImage = imageDownloaderTask.execute(celebURLs.get(chosenCeleb)).get();
+
+            imageView.setImageBitmap(celebImage);
+
+            locationOfCorrectAnswer = rand.nextInt(4);
+
+            int incorrectAnswerLocation = 0;
+
+            for (int i = 0; i < 4; i++) {
+                if (i == locationOfCorrectAnswer) {
+                    answers[i] = celebNames.get(chosenCeleb);
+                } else {
+                    incorrectAnswerLocation = rand.nextInt(celebURLs.size());
+
+                    while (incorrectAnswerLocation == chosenCeleb) {
+                        incorrectAnswerLocation = rand.nextInt(celebURLs.size());
+                    }
+
+                    answers[i] = celebNames.get(incorrectAnswerLocation);
+                }
+            }
+
+            button0.setText(answers[0]);
+            button1.setText(answers[1]);
+            button2.setText(answers[2]);
+            button3.setText(answers[3]);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
